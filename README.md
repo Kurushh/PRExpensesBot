@@ -1,5 +1,5 @@
 # Requirements:
-* python 3.9.2
+* [python 3.9.2](https://www.python.org/)
 * [redis-server](https://redis.io/topics/quickstart)
 # Python dependencies:
 * [python-telegram-bot](https://github.com/python-telegram-bot/python-telegram-bot)

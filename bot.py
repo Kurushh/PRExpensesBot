@@ -149,7 +149,7 @@ def help(update,context):
     and items inserted into the database\n\n
     Use "/add <name> <price> <quantity>" to add a new item in the bot's database\n
     Price and quantity need to be numbers!\n Example: '/add pizza 4 1' ( 3.86 instead
-    of 4 also works)\nYou can also specify an extra argument <group> es "Food" or "Bills". 
+    of 4 also works)\nYou can also specify an extra argument <group> i.e "Food" or "Bills". 
     At the end of the month you will get a message with the total cost of all items for each group you've created\n\n
     Use "/del (optional)<number>" to delete the last item added or decrement his quantity by 
     some value\n Example:"/del 2" it will decrease the stored quantity of the last added item by 2.

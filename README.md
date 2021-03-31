@@ -14,7 +14,7 @@ PRExpensesBot is a telegram bot
 * [python-telegram-bot](https://github.com/python-telegram-bot/python-telegram-bot)
 * [redis-py](https://github.com/andymccurdy/redis-py)
 
-# If you're new to redis or never used it:
+# If you're new to **redis** or never used it:
 If you plan to keep this bot running, please be sure to read atleast [this](https://redis.io/topics/memory-optimization#memory-allocation).
 Keep your redis istance in [protected mode](https://redis.io/topics/security) because a malicious adversary could easily exploit your database if you expose your redis-server to the internet. Protected Mode is enabled by default, so if you don't change anything in config you'll be ok. 
 

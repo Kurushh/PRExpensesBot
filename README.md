@@ -6,7 +6,7 @@ PRExpensesBot is a telegram bot
 * It is multi-user compatible, if your friends or family want to use it, there is no need to host another redis database istance
 * (Work in progress) At the end of each year, you will get a long yearly recap
 * (Work in progress) If monthly and yearly recaps bothers you, you can disable them!
-* (Work in progress) Charts!! Graphs!!
+* (Work in progress) A bit of data visualization: charts!! Diagram!! 
 # Requirements:
 * [python 3.9.2](https://www.python.org/)
 * [redis-server](https://redis.io/topics/quickstart)

@@ -11,10 +11,11 @@ Keep your redis istance in [protected mode](https://redis.io/topics/security) be
 
 # Usage
 1. Get your [telegram bot token](https://core.telegram.org/bots#creating-a-new-bot)
-2. Download the code, look for the ``mytoken`` variable (line 162) and insert your bot token inside the ``".."``
-3. Install redis-server, test it, config it and so on
-4. Run a redis-server istance
-5. Run the bot
-6. Go on Telegram, look for you bot, type /help
-7. Enjoy
-8. (Optional) Make sure to complain about it or suggest how it could be improved
+2. Download the code
+3. Edit ``bot.py`` with your favorite editor: look for the ``mytoken`` variable (line 162) and insert your bot token inside the ``".."``
+4. Install redis-server, test it, config it and so on
+5. Run a redis-server istance
+6. Run the bot
+7. Go on Telegram, look for you bot, type /help
+8. Enjoy
+9. (Optional) Make sure to complain about it or suggest how it could be improved

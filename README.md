@@ -1,3 +1,12 @@
+# What this bot can do:
+PRExpensesBot is a telegram bot 
+* You can add new expenses to the database
+* For each item you can (optionally) specify a group or category i.e "Food" or "Bills" or "Hobby" or whatever 
+* At the end of each month, the bot will send you a recap (or use /log if in whatever moment)
+* It is multi-user compatible, if your friends or family want to use it, there is no need to host another redis database istance
+* (Work in progress) At the end of each year, you will get a long yearly recap
+* (Work in progress) If monthly and yearly recaps bothers you, you can disable them!
+* (Work in progress) Charts!! Graphs!!
 # Requirements:
 * [python 3.9.2](https://www.python.org/)
 * [redis-server](https://redis.io/topics/quickstart)

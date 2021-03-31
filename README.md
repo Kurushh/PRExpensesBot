@@ -19,3 +19,6 @@ Keep your redis istance in [protected mode](https://redis.io/topics/security) be
 7. Go on Telegram, look for you bot, type /help
 8. Enjoy
 9. (Optional) Make sure to complain about it or suggest how it could be improved
+
+# License
+Released under the [MIT License](https://mit-license.org/)

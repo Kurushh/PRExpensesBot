@@ -159,7 +159,7 @@ def help(update,context):
     update.message.reply_text(text)
 
 def main():
-    mytoken = "YOUR-TOKEN-BOT"
+    mytoken = "INSERT-YOUR-TOKEN-BOT-HERE"
     updater = Updater(mytoken, use_context=True)
     dispatcher = updater.dispatcher
 

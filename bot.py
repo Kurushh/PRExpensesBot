@@ -11,7 +11,6 @@ logging.basicConfig(
         )
 logger = logging.getLogger(__name__)
 
-# this should be reviewed at some point
 client = redis.StrictRedis(host='localhost', port=6379, decode_responses=True)
 
 def generate_log(context):
@@ -19,6 +18,7 @@ def generate_log(context):
     psum = 0.0
     cnt = 0
     groups = dict()
+    itlist = []
     for item in client.smembers(get_current_month()):
         iprice = 0.0
         iqt = 0.0
@@ -27,20 +27,32 @@ def generate_log(context):
             iqt = float(client.hget(item, 'qt') )
             psum = psum + (iprice * iqt)
             cnt = cnt + int(iqt)
+            i = client.hget(item,'name')
+            i2 = str (round( (iprice*iqt), 2) )
             if client.hexists(item,'group') == True:
                 grpname = client.hget(item, 'group')
+                itlist = itlist + [[grpname,i,i2]]
                 if grpname in groups:
                     groups[grpname] = groups[grpname] + iprice * iqt
                 else:
                     groups[grpname] = iprice * iqt
+            else:
+                itlist = itlist + [['*',i,i2]]
 
     text = "You spent a total of " + str(round(psum, 2)) + " bucks\n"
-    text = text + "You added a total of " +str(cnt)+" items\n"
+    text = text + "You added a total of " +str(cnt)+" items\n\n\n"
+    text2 = "" #please delete text2, it's useless just use text
 
-    for key in groups.keys():
-        text = text + key + ': '+ str(round(groups[key], 2)) + " bucks\n"
+    itlist.sort() # .sort() by the first element in list: the group
+    flag = '*'
+    for key in itlist:
+        if key[0] != flag:
+            text2 = text2 + "\n\n"
+            flag = key[0]
+            text2 = text2 + key[0] + ': ' + str(round(groups[key[0]],2)) + " bucks\n"
+        text2 = text2 + key[1] + " " + key[2] + "\n"
 
-    return text
+    return text+text2
 
 
 def debug_log(update, context):
@@ -159,7 +171,7 @@ def help(update,context):
     update.message.reply_text(text)
 
 def main():
-    mytoken = "INSERT-YOUR-TOKEN-BOT-HERE"
+    mytoken = "1628589779:AAEgWgJWQXgg2Tz1CDK3cnmiEaO19W-7r6s"
     updater = Updater(mytoken, use_context=True)
     dispatcher = updater.dispatcher
 

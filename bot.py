@@ -171,7 +171,7 @@ def help(update,context):
     update.message.reply_text(text)
 
 def main():
-    mytoken = "1628589779:AAEgWgJWQXgg2Tz1CDK3cnmiEaO19W-7r6s"
+    mytoken = ""
     updater = Updater(mytoken, use_context=True)
     dispatcher = updater.dispatcher
 

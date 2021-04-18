@@ -7,7 +7,7 @@ It is used to keep track of your monthly expenses, bills, purchases and so on.
 * At the end of each month, the bot will send you a recap (or use /log if in whanever you want)
 * It is multi-user compatible, if your friends or relatives want to use it, they can use your redis server instance.
 * You added something by mistake (or something you regret)? Don't worry there's a command to /del ete it!
-* (Work in progress) At the end of each year, you will get a long general recap
+* At the end of each year, you will get a long general recap
 * (Work in progress) If recap bothers you, you can disable them!
 * (Work in progress) Data visualization
 # Requirements:

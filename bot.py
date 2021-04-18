@@ -13,16 +13,31 @@ logger = logging.getLogger(__name__)
 
 client = redis.StrictRedis(host='localhost', port=6379, decode_responses=True)
 
-def generate_log(context):
-    usr_id = str(context)
+
+def getot(usr_id):
+    lleng = client.llen(str(usr_id))
+    psum = 0.0
+    cnt = 0
+    for item in client.lrange(str(usr_id), 0, lleng):
+        iprice = float(client.hget(item,'price'))
+        iqt = float(client.hget(item, 'qt'))
+        psum = psum + (iprice * iqt)
+        cnt = cnt + int(iqt)
+     
+    text = str(datetime.date.today().year).capitalize()
+    text = "This year,you spent a total of " + str(round(psum, 2)) + " bucks\n"
+    text = text + "You added a total of " +str(cnt)+" items\n"
+
+
+def generate_log(usr_id,date):
     psum = 0.0
     cnt = 0
     groups = dict()
     itlist = []
-    for item in client.smembers(get_current_month()):
+    for item in client.smembers(date):
         iprice = 0.0
         iqt = 0.0
-        if(client.hget(item, 'owner') == usr_id ): 
+        if(client.hget(item, 'owner') == str(usr_id) ): 
             iprice = float(client.hget(item,'price') )
             iqt = float(client.hget(item, 'qt') )
             psum = psum + (iprice * iqt)
@@ -40,33 +55,56 @@ def generate_log(context):
                 itlist = itlist + [['*',i,i2]]
 
     text = "You spent a total of " + str(round(psum, 2)) + " bucks\n"
-    text = text + "You added a total of " +str(cnt)+" items\n\n\n"
-    text2 = "" #please delete text2, it's useless just use text
+    text = text + "You added a total of " +str(cnt)+" items\n"
 
-    itlist.sort() # .sort() by the first element in list: the group
+    itlist.sort() # after sorting, elements from the same group are in sequential order 
     flag = '*'
     for key in itlist:
         if key[0] != flag:
-            text2 = text2 + "\n\n"
+            text = text + "\n\n"
             flag = key[0]
-            text2 = text2 + key[0] + ': ' + str(round(groups[key[0]],2)) + " bucks\n"
-        text2 = text2 + key[1] + " " + key[2] + "\n"
+            text = text + key[0] + ': ' + str(round(groups[key[0]],2)) + " bucks\n"
+        text = text + key[1] + " " + key[2] + "\n"
 
-    return text+text2
+    return text
 
 
 def debug_log(update, context):
-    text = generate_log(update.message.from_user.id)
+    cm = get_current_month()
+    y = datetime.date.today().year
+    if datetime.date.today().month != 12:
+        text = generate_log(update.message.from_user.id,cm)
+    else:
+        text = getot(update.message.from_user.id)
+        for i in range(1,12):
+            im = str(i) + "-" + str(y) 
+            text = text + generate_log(update.message.from_user.id, im) + "\n"
     context.bot.send_message(update.message.chat_id, text=text)
-
 
 def _log(context):
     chat_id = str(context.job.context.message.chat_id)
-    text = generate_log(context.job.context.message.from_user.id)
+    cm = get_current_month()
+    text = generate_log(context.job.context.message.from_user.id,cm)
     context.bot.send_message(chat_id=chat_id, text=text)
 
 
-def del_last_added(update, context): #investigate on why pipeline give problems
+def flush(update, context):
+    try:
+        usr_id = str(update.message.from_user.id)
+        cm = get_current_month()
+        lleng = client.llen(usr_id)
+        for x in client.lrange(usr_id,0,lleng):
+            if client.hget(x,'date')==cm and client.hget(x,'name')==context.args[0].capitalize():
+                iname = client.hget(x,'name')
+                client.lrem(usr_id, 0, x)
+                client.delete(x)
+                update.message.reply_text(iname + ' successfully eliminated!')
+                return
+        raise Exception("Item not found")
+    except Exception as e: 
+        update.message.reply_text("Item not found")
+
+def del_last_added(update, context): 
     #context.args[0] is an integer taken as (optional) input argument from user
     #If context.args[0] exists and the list is not empty
     #And the qt value of the last added item is strictly greater than the input 
@@ -82,7 +120,7 @@ def del_last_added(update, context): #investigate on why pipeline give problems
             update.message.reply_text(text)
             return
 
-    #Otherwise , just delete the last added voice
+    #Otherwise , just delete the entire last added voice
     try:    
         last_added = client.lpop(usr_id)
         client.delete(last_added)
@@ -107,14 +145,14 @@ def add(update,context):
                 same_name = client.hget(item, 'name') == context.args[0].capitalize()
                 same_price = float(client.hget(item, 'price')) == float(context.args[1])
                 if (same_owner and same_name and same_price) == True:
-                        client.hincrby(item,'qt',context.args[2])
+                        client.hincrbyfloat(item,'qt',context.args[2])
                         return
 
             # Otherwise, create a new voice for the database
             new_voice = dict() 
             new_voice['name']= context.args[0].capitalize()
             new_voice['price']= float(context.args[1])
-            new_voice['qt'] = context.args[2]
+            new_voice['qt'] = float(context.args[2])
             new_voice['date']= cm
             new_voice['owner']= usr_id
             if len(context.args)==4:
@@ -166,6 +204,7 @@ def help(update,context):
     Use "/del (optional)<number>" to delete the last item added or decrement his quantity by 
     some value\n Example:"/del 2" it will decrease the stored quantity of the last added item by 2.
     \nThis command is meant to be used in case of mistakes\n\n.
+    Use "/flush <itemname>" to wipe an item previously added
     Use "/log" to istantly get the monthly log (for debug purposes)
     '''
     update.message.reply_text(text)
@@ -179,6 +218,7 @@ def main():
     dispatcher.add_handler(CommandHandler('start',start, pass_job_queue=True))
     dispatcher.add_handler(CommandHandler('add',add))
     dispatcher.add_handler(CommandHandler('del',del_last_added))
+    dispatcher.add_handler(CommandHandler('flush',flush))
     dispatcher.add_handler(CommandHandler('log',debug_log)) #for debug purposes
     updater.start_polling()
     updater.idle()

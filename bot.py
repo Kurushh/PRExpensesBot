@@ -4,6 +4,7 @@ import logging
 import redis
 import datetime
 
+MY_TOKEN = ""
 
 # Basic logging
 logging.basicConfig(
@@ -130,6 +131,27 @@ def del_last_added(update, context):
     finally:
         update.message.reply_text(text)
 
+def qadd(update, context): # code is redundant
+    cm = get_current_month()
+    usr_id = update.message.from_user.id
+    text = 'Item successfully inserted! Next!'
+
+    try:
+            for item in client.sscan_iter(cm):
+                same_owner = client.hget(item, 'owner') == str(usr_id)
+                same_name = client.hget(item, 'name') == context.args[0].capitalize()
+                same_price = float(client.hget(item, 'price')) == float(context.args[1])
+                if (same_owner and same_name and same_price) == True:
+                        client.hincrbyfloat(item,'qt',context.args[1])
+            raise Exception("NotFound")
+
+    except IndexError as e:
+        print(e)
+        text = "Error: you need to use the format:\n /qadd 'name' 'qt' "
+    except Exception:
+        text = "Error: item not found, use /add instead"
+    finally:
+        update.message.reply_text(text)
 
 def add(update,context):
         cm = get_current_month()
@@ -178,11 +200,17 @@ def get_current_month():
     current_year = str(datetime.date.today().year)
     return current_month +'-'+current_year
 
-def start(update,context):
+
+def unsub(update, context):
+    t = context.job_queue.jobs()
+    t[0].schedule_removal()
+    update.message.reply_text("I will not bother you any further!")
+    
+
+def sub(update,context):
     chat_id = update.message.chat.id
     username = update.message.from_user.username
-    text = "Hi "+ username + "! Bot is initialized\n"
-    text = text + "Use /help to get the full list of commands"
+    text = "Hi "+ username + "! I'm gonna send you a recap every last of the month" 
 
     context.bot.send_message(chat_id=chat_id, text=text)
     
@@ -192,34 +220,39 @@ def start(update,context):
 
 
 def help(update,context):
-    text= '''
-    Hi this bot can help you to keep track of your expenses.\n\n
-    Use "/start" to initialize the bot \nAfter you initialized it,every last 
-    day of the month, the bot will send you a message with the sum of expenses
-    and items inserted into the database\n\n
-    Use "/add <name> <price> <quantity>" to add a new item in the bot's database\n
-    Price and quantity need to be numbers!\n Example: '/add pizza 4 1' ( 3.86 instead
-    of 4 also works)\nYou can also specify an extra argument <group> i.e "Food" or "Bills". 
+    text=''' 
+    Hi this bot help you to keep track of your expenses.\n\n
+    Use "/add <name> <price> <quantity> <group>" to add a new item in the bot's database\n
+    Price and quantity need to be numbers and <group> is optional!\n Example: '/add pizza 4 1' ( 3.86 instead
+    of 4 also works)\n 
     At the end of the month you will get a message with the total cost of all items for each group you've created\n\n
-    Use "/del (optional)<number>" to delete the last item added or decrement his quantity by 
-    some value\n Example:"/del 2" it will decrease the stored quantity of the last added item by 2.
-    \nThis command is meant to be used in case of mistakes\n\n.
-    Use "/flush <itemname>" to wipe an item previously added
-    Use "/log" to istantly get the monthly log (for debug purposes)
+    Use "/qadd <name> <quantity" to increase the quantity of an item you previously inserted
+    Use "/del (optional)<number>" to delete the last item added or decrease his quantity by 
+    some value\n Example:"/del 2"  will decrease the stored quantity of the last added item by 2.
+    Use "/flush <itemname>" to delete an item previously added
+    Use "/sub" to receive, every last day of the month, the recap of your expenses
+     (disabled by default)\n\n
+    If you used "/sub" by mistake or you do not wish to receive notifications use "/unsub" 
+
+    Use "/log" to istantly get the monthly recap 
     '''
     update.message.reply_text(text)
 
 def main():
-    mytoken = ""
-    updater = Updater(mytoken, use_context=True)
+    updater = Updater(MYTOKEN, use_context=True)
     dispatcher = updater.dispatcher
 
     dispatcher.add_handler(CommandHandler('help',help))
-    dispatcher.add_handler(CommandHandler('start',start, pass_job_queue=True))
+
     dispatcher.add_handler(CommandHandler('add',add))
+    dispatcher.add_handler(CommandHandler('qadd',qadd))
     dispatcher.add_handler(CommandHandler('del',del_last_added))
     dispatcher.add_handler(CommandHandler('flush',flush))
-    dispatcher.add_handler(CommandHandler('log',debug_log)) #for debug purposes
+
+    dispatcher.add_handler(CommandHandler('unsub',unsub)) 
+    dispatcher.add_handler(CommandHandler('sub',sub, pass_job_queue=True))
+
+    dispatcher.add_handler(CommandHandler('log',debug_log)) 
     updater.start_polling()
     updater.idle()
 

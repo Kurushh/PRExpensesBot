@@ -6,13 +6,9 @@ PRExpensesBot is a telegram bot that keep track of your expenses, bills, purchas
 * Subscribe/Unsubscribe function for automatic recaps 
 * Multi-user compatible: if your friends or relatives want to use it, they can use your bot.
 * Monthly and yearly recaps sorted by groups and months
-* (Work in progress) Data visualization
 # Requirements:
 * [python 3.9.2](https://www.python.org/)
 * [redis-server](https://redis.io/topics/quickstart)
-### Python dependencies:
-* [python-telegram-bot](https://github.com/python-telegram-bot/python-telegram-bot)
-* [redis-py](https://github.com/andymccurdy/redis-py)
 
 ## If you're new to redis or never used it:
 If you just wanna try the bot once, you're fine with redis default configs
